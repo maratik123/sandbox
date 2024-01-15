@@ -1,3 +1,6 @@
+use sandbox::args_parser;
+
 fn main() {
-    println!("Hello, world!");
+    let args = args_parser::parse().unwrap();
+    println!("{args:?}");
 }
