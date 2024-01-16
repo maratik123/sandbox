@@ -1,6 +1,7 @@
 use anyhow::Result;
 use clap::{Args, Parser};
 use enumflags2::{bitflags, BitFlags};
+use nix::unistd::{access, AccessFlags};
 use std::ffi::OsString;
 use std::path::PathBuf;
 
@@ -120,7 +121,6 @@ struct ProgramWithArgs {
 pub fn parse() -> Result<SbRunOptions> {
     let args = SbArgs::parse();
     let ns = !args.ns_off && args.ns_on;
-    #[inline]
     fn bf(off: bool, on: bool, flag: NS) -> Option<NS> {
         if !off && on {
             Some(flag)
@@ -128,8 +128,14 @@ pub fn parse() -> Result<SbRunOptions> {
             None
         }
     }
+    let run_bash = args.run_bash
+        || if let Some(program) = &args.program_args.program {
+            access(program, AccessFlags::X_OK).is_err()
+        } else {
+            false
+        };
     Ok(SbRunOptions {
-        run_bash: args.run_bash,
+        run_bash,
         run_cargo: args.run_cargo,
         program_args: args.program_args.program.map(|program| ProgramArgs {
             program,
