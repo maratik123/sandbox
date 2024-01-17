@@ -14,6 +14,7 @@ const SANDBOX_BANNER: &str =
 struct SandboxInfo {
     work_dir: Option<PathBuf>,
     tmp_dir: PathBuf,
+    home_dir: PathBuf,
 }
 
 fn main() {
@@ -54,10 +55,26 @@ fn setup_sandbox(interactive: bool) -> Result<SandboxInfo, SetupSandboxError> {
         }
         Some(work_dir)
     } else {
+        /* Portage handle setting SANDBOX_WRITE itself. */
         None
     };
+
     let tmp_dir = get_tmp_dir()?;
-    Ok(SandboxInfo { work_dir, tmp_dir })
+    env::set_var(env_key::TMPDIR, &tmp_dir);
+
+    let home_dir = env::var_os(env_key::HOME)
+        .map(PathBuf::from)
+        .unwrap_or_else(|| {
+            let home_dir = tmp_dir.clone();
+            env::set_var(env_key::HOME, &home_dir);
+            home_dir
+        });
+
+    Ok(SandboxInfo {
+        work_dir,
+        tmp_dir,
+        home_dir,
+    })
 }
 
 fn get_tmp_dir() -> Result<PathBuf, SetupSandboxError> {

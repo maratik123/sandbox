@@ -3,3 +3,4 @@ pub const SANDBOX_ACTIVE: &str = "SANDBOX_ACTIVE";
 pub const PORTAGE_TMPDIR: &str = "PORTAGE_TMPDIR";
 pub const SANDBOX_WORKDIR: &str = "SANDBOX_WORKDIR";
 pub const TMPDIR: &str = "TMPDIR";
+pub const HOME: &str = "HOME";
