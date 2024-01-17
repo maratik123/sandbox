@@ -2,6 +2,7 @@ use log::{debug, Level, LevelFilter};
 use sandbox::dir::TMPDIR;
 use sandbox::environment::{has_env, is_env_on};
 use sandbox::{args_parser, env_key};
+use std::io::Write;
 use std::path::PathBuf;
 use std::{env, fs, io};
 use thiserror::Error;
@@ -20,7 +21,10 @@ fn main() {
     let log_level = args
         .program_args
         .map_or(LevelFilter::Debug, |_| LevelFilter::Info);
-    env_logger::builder().filter_level(log_level).init();
+    env_logger::builder()
+        .format(|buf, record| writeln!(buf, "{}", record.args()))
+        .filter_level(log_level)
+        .init();
 
     debug!("{SANDBOX_BANNER}");
 
