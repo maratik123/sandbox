@@ -52,11 +52,7 @@ mod tests {
 
     #[test]
     fn max_values_const_len_should_be_max_for_values() {
-        for s in TRUE_VALUES_CONSTS
-            .iter()
-            .copied()
-            .chain(FALSE_VALUES_CONSTS)
-        {
+        for s in TRUE_VALUES_CONSTS.into_iter().chain(FALSE_VALUES_CONSTS) {
             assert!(
                 s.len() <= MAX_VALUES_CONST_LEN,
                 "'{s}'.len = {} is more than {MAX_VALUES_CONST_LEN}",
