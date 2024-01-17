@@ -22,16 +22,16 @@ pub enum NS {
 
 #[derive(Debug, Clone)]
 pub struct SbRunOptions {
-    run_bash: bool,
-    ns_opts: Option<BitFlags<NS>>,
-    run_cargo: bool,
-    program_args: Option<ProgramArgs>,
+    pub run_bash: bool,
+    pub ns_opts: Option<BitFlags<NS>>,
+    pub run_cargo: bool,
+    pub program_args: Option<ProgramArgs>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ProgramArgs {
-    program: PathBuf,
-    args: Vec<OsString>,
+    pub program: PathBuf,
+    pub args: Vec<OsString>,
 }
 
 /// Sandbox will start up a sandbox session and execute the specified program.
@@ -40,61 +40,61 @@ pub struct ProgramArgs {
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct SbArgs {
-    /// Enable the use of namespaces
+    /// Enable  the use of namespaces
     #[arg(long)]
     ns_on: bool,
     /// Disable the use of namespaces
     #[arg(long)]
     ns_off: bool,
-    /// Enable the use of cgroup namespaces
+    /// Enable  the use of cgroup namespaces
     #[arg(long)]
     ns_cgroup_on: bool,
     /// Disable the use of cgroup namespaces
     #[arg(long)]
     ns_cgroup_off: bool,
-    /// Enable the use of IPC (and System V) namespaces
+    /// Enable  the use of IPC (and System V) namespaces
     #[arg(long)]
     ns_ipc_on: bool,
     /// Disable the use of IPC (and System V) namespaces
     #[arg(long)]
     ns_ipc_off: bool,
-    /// Enable the use of mount namespaces
+    /// Enable  the use of mount namespaces
     #[arg(long)]
     ns_mnt_on: bool,
     /// Disable the use of mount namespaces
     #[arg(long)]
     ns_mnt_off: bool,
-    /// Enable the use of network namespaces
+    /// Enable  the use of network namespaces
     #[arg(long)]
     ns_net_on: bool,
     /// Disable the use of network namespaces
     #[arg(long)]
     ns_net_off: bool,
-    /// Enable the use of process (pid) namespaces
+    /// Enable  the use of process (pid) namespaces
     #[arg(long)]
     ns_pid_on: bool,
     /// Disable the use of process (pid) namespaces
     #[arg(long)]
     ns_pid_off: bool,
-    /// Enable the use of System V namespaces
+    /// Enable  the use of System V namespaces
     #[arg(long)]
     ns_sysv_on: bool,
     /// Disable the use of System V namespaces
     #[arg(long)]
     ns_sysv_off: bool,
-    /// Enable the use of time namespaces
+    /// Enable  the use of time namespaces
     #[arg(long)]
     ns_time_on: bool,
     /// Disable the use of time namespaces
     #[arg(long)]
     ns_time_off: bool,
-    /// Enable the use of user namespaces
+    /// Enable  the use of user namespaces
     #[arg(long)]
     ns_user_on: bool,
     /// Disable the use of user namespaces
     #[arg(long)]
     ns_user_off: bool,
-    /// Enable the use of UTS (hostname/uname) namespaces
+    /// Enable  the use of UTS (hostname/uname) namespaces
     #[arg(long)]
     ns_uts_on: bool,
     /// Disable the use of UTS (hostname/uname) namespaces
@@ -121,45 +121,49 @@ struct ProgramWithArgs {
 pub fn parse() -> Result<SbRunOptions> {
     let args = SbArgs::parse();
     let ns = !args.ns_off && args.ns_on;
-    fn bf(off: bool, on: bool, flag: NS) -> Option<NS> {
-        if !off && on {
-            Some(flag)
-        } else {
-            None
-        }
-    }
     let run_bash = args.run_bash
         || if let Some(program) = &args.program_args.program {
             access(program, AccessFlags::X_OK).is_err()
         } else {
             false
         };
+    let program_args = args.program_args.program.map(|program| ProgramArgs {
+        program,
+        args: args.program_args.args,
+    });
+    let ns_opts = if ns {
+        Some(
+            [
+                bf(args.ns_cgroup_off, args.ns_cgroup_on, NS::CGroup),
+                bf(args.ns_ipc_off, args.ns_ipc_on, NS::IPC),
+                bf(args.ns_mnt_off, args.ns_mnt_on, NS::Mnt),
+                bf(args.ns_net_off, args.ns_net_on, NS::Net),
+                bf(args.ns_pid_off, args.ns_pid_on, NS::Pid),
+                bf(args.ns_sysv_off, args.ns_sysv_on, NS::SysV),
+                bf(args.ns_time_off, args.ns_time_on, NS::Time),
+                bf(args.ns_user_off, args.ns_user_on, NS::User),
+                bf(args.ns_uts_off, args.ns_uts_on, NS::UTS),
+            ]
+            .into_iter()
+            .flatten()
+            .collect(),
+        )
+    } else {
+        None
+    };
     Ok(SbRunOptions {
         run_bash,
         run_cargo: args.run_cargo,
-        program_args: args.program_args.program.map(|program| ProgramArgs {
-            program,
-            args: args.program_args.args,
-        }),
-        ns_opts: if ns {
-            Some(
-                [
-                    bf(args.ns_cgroup_off, args.ns_cgroup_on, NS::CGroup),
-                    bf(args.ns_ipc_off, args.ns_ipc_on, NS::IPC),
-                    bf(args.ns_mnt_off, args.ns_mnt_on, NS::Mnt),
-                    bf(args.ns_net_off, args.ns_net_on, NS::Net),
-                    bf(args.ns_pid_off, args.ns_pid_on, NS::Pid),
-                    bf(args.ns_sysv_off, args.ns_sysv_on, NS::SysV),
-                    bf(args.ns_time_off, args.ns_time_on, NS::Time),
-                    bf(args.ns_user_off, args.ns_user_on, NS::User),
-                    bf(args.ns_uts_off, args.ns_uts_on, NS::UTS),
-                ]
-                .into_iter()
-                .flatten()
-                .collect(),
-            )
-        } else {
-            None
-        },
+        program_args,
+        ns_opts,
     })
+}
+
+#[inline]
+fn bf(off: bool, on: bool, flag: NS) -> Option<NS> {
+    if !off && on {
+        Some(flag)
+    } else {
+        None
+    }
 }

@@ -8,5 +8,7 @@ anyhow = "1"
 capctl = "0.2"
 clap = { version = "4", features = ["derive", "string"] }
 enumflags2 = "0.7"
+env_logger = "0.10"
+log = "0.4"
 nix = { version = "0.27", features = ["fs"] }
 thiserror = "1"
