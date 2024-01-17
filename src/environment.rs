@@ -4,14 +4,6 @@ use std::ffi::OsStr;
 use std::os::unix::ffi::OsStrExt;
 use std::sync::OnceLock;
 
-pub mod env_key {
-    pub const SANDBOX_TESTING: &str = "__SANDBOX_TESTING";
-    pub const SANDBOX_ACTIVE: &str = "SANDBOX_ACTIVE";
-    pub const PORTAGE_TMPDIR: &str = "PORTAGE_TMPDIR";
-    pub const SANDBOX_WORKDIR: &str = "SANDBOX_WORKDIR";
-    pub const TMPDIR: &str = "TMPDIR";
-}
-
 const TRUE_VALUES_CONSTS: [&str; 3] = ["1", "true", "yes"];
 const FALSE_VALUES_CONSTS: [&str; 3] = ["0", "false", "no"];
 

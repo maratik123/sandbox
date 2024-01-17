@@ -1,5 +1,4 @@
 pub mod args_parser;
-pub mod dirs;
+pub mod dir;
+pub mod env_key;
 pub mod environment;
-
-pub use environment::env_key as envk;

@@ -1,8 +1,7 @@
 use log::{debug, Level, LevelFilter};
-use sandbox::args_parser;
-use sandbox::dirs::TMPDIR;
+use sandbox::dir::TMPDIR;
 use sandbox::environment::{has_env, is_env_on};
-use sandbox::envk;
+use sandbox::{args_parser, env_key};
 use std::path::PathBuf;
 use std::{env, fs, io};
 use thiserror::Error;
@@ -25,7 +24,7 @@ fn main() {
 
     debug!("{SANDBOX_BANNER}");
 
-    if !is_env_on(envk::SANDBOX_TESTING) && has_env(envk::SANDBOX_ACTIVE) {
+    if !is_env_on(env_key::SANDBOX_TESTING) && has_env(env_key::SANDBOX_ACTIVE) {
         panic!("not launching a new sandbox as one is already running in this process hierarchy");
     }
 
@@ -44,10 +43,10 @@ enum SetupSandboxError {
 }
 
 fn setup_sandbox(interactive: bool) -> Result<SandboxInfo, SetupSandboxError> {
-    let work_dir = if !has_env(envk::PORTAGE_TMPDIR) {
+    let work_dir = if !has_env(env_key::PORTAGE_TMPDIR) {
         let work_dir = env::current_dir().map_err(SetupSandboxError::GetCurrentDir)?;
         if interactive {
-            env::set_var(envk::SANDBOX_WORKDIR, &work_dir)
+            env::set_var(env_key::SANDBOX_WORKDIR, &work_dir)
         }
         Some(work_dir)
     } else {
@@ -58,6 +57,6 @@ fn setup_sandbox(interactive: bool) -> Result<SandboxInfo, SetupSandboxError> {
 }
 
 fn get_tmp_dir() -> Result<PathBuf, SetupSandboxError> {
-    fs::canonicalize(env::var_os(envk::TMPDIR).unwrap_or(TMPDIR.into()))
+    fs::canonicalize(env::var_os(env_key::TMPDIR).unwrap_or(TMPDIR.into()))
         .map_err(SetupSandboxError::GetTmpDir)
 }
