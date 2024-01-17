@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::os::unix::ffi::OsStrExt;
 use std::sync::OnceLock;
 
-pub mod key {
+pub mod env_key {
     pub const SANDBOX_TESTING: &str = "__SANDBOX_TESTING";
     pub const SANDBOX_ACTIVE: &str = "SANDBOX_ACTIVE";
     pub const PORTAGE_TMPDIR: &str = "PORTAGE_TMPDIR";
