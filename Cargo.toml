@@ -2,7 +2,7 @@
 
 resolver = "2"
 members = [
-    "libsandbox",
-    "sandbox",
+    "sandbox-lib-rs",
+    "sandbox-rs",
     "sbutil",
 ]

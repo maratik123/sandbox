@@ -1,7 +1,8 @@
 use log::{debug, Level, LevelFilter};
-use sandbox::dir::TMPDIR;
-use sandbox::environment::{has_env, is_env_on};
-use sandbox::{args_parser, env_key};
+use sandbox_rs::args_parser;
+use sandbox_rs::dir::TMPDIR;
+use sandbox_rs::environment::{has_env, is_env_on};
+use sbutil::env_key;
 use std::io::Write;
 use std::path::PathBuf;
 use std::{env, fs, io};
