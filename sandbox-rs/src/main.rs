@@ -1,12 +1,11 @@
 use log::{debug, Level, LevelFilter};
 use sandbox_rs::args_parser;
-use sandbox_rs::dir::TMPDIR;
 use sandbox_rs::environment::{has_env, is_env_on};
-use sbutil::env_key;
+use sbutil::consts::env_key;
+use sbutil::{get_sandbox_lib, get_tmp_dir, SetupSandboxError};
+use std::env;
 use std::io::Write;
 use std::path::PathBuf;
-use std::{env, fs, io};
-use thiserror::Error;
 
 const SANDBOX_BANNER: &str =
     "============================= Gentoo path sandbox ==============================";
@@ -16,6 +15,7 @@ struct SandboxInfo {
     work_dir: Option<PathBuf>,
     tmp_dir: PathBuf,
     home_dir: PathBuf,
+    sandbox_lib: PathBuf,
 }
 
 fn main() {
@@ -38,14 +38,6 @@ fn main() {
 
     let sandbox_info = setup_sandbox(log_level >= Level::Debug).expect("failed to setup sandbox");
     println!("{sandbox_info:#?}");
-}
-
-#[derive(Error, Debug)]
-enum SetupSandboxError {
-    #[error("failed to get current directory: {0}")]
-    GetCurrentDir(#[source] io::Error),
-    #[error("failed to get tmp_dir: {0}")]
-    GetTmpDir(#[source] io::Error),
 }
 
 fn setup_sandbox(interactive: bool) -> Result<SandboxInfo, SetupSandboxError> {
@@ -71,14 +63,12 @@ fn setup_sandbox(interactive: bool) -> Result<SandboxInfo, SetupSandboxError> {
             home_dir
         });
 
+    let sandbox_lib = get_sandbox_lib();
+
     Ok(SandboxInfo {
         work_dir,
         tmp_dir,
         home_dir,
+        sandbox_lib,
     })
-}
-
-fn get_tmp_dir() -> Result<PathBuf, SetupSandboxError> {
-    fs::canonicalize(env::var_os(env_key::TMPDIR).unwrap_or(TMPDIR.into()))
-        .map_err(SetupSandboxError::GetTmpDir)
 }

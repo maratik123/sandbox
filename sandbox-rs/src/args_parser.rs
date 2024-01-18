@@ -22,10 +22,9 @@ pub enum NS {
 
 #[derive(Debug, Clone)]
 pub struct SbRunOptions {
-    pub run_bash: bool,
-    pub ns_opts: Option<BitFlags<NS>>,
-    pub run_cargo: bool,
     pub program_args: Option<ProgramArgs>,
+    pub ns_opts: Option<BitFlags<NS>>,
+    pub run_bash: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -103,9 +102,6 @@ struct SbArgs {
     /// Run command through bash shell
     #[arg(short = 'c', long = "bash")]
     run_bash: bool,
-    /// Run local sandbox cargo in same way and exit (developer only)
-    #[arg(long)]
-    run_cargo: bool,
     #[command(flatten)]
     program_args: ProgramWithArgs,
 }
@@ -153,7 +149,6 @@ pub fn parse() -> Result<SbRunOptions> {
     };
     Ok(SbRunOptions {
         run_bash,
-        run_cargo: args.run_cargo,
         program_args,
         ns_opts,
     })
